@@ -1,0 +1,80 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Not trading days</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #warning {
+            color: red;
+            font-weight: bold;
+            display: none;
+        }
+        #payoutMessage {
+            color: green;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h2>Select first trading Date</h2>
+    <p>Choose a date from the date picker. Not trading days cannot be selected.</p>
+    <p>Always double check the calendar manually.</p>
+    <input type="date" id="datePicker" min="2024-01-01" >
+    <p id="warning">This date is not trading day. Please choose a different date.</p>
+    <p id="payoutMessage"></p> <!-- Payout request message -->
+   
+    <script>
+        // Array of restricted dates (YYYY-MM-DD format)
+        const restrictedDates = ['2024-01-01', '2024-01-15', '2024-02-19', '2024-03-29', '2024-04-01', '2024-05-06', '2024-05-27', '2024-06-19', '2024-07-04', '2024-08-26', '2024-09-02', '2024-10-14', '2024-10-28', '2024-11-05', '2024-11-11', '2024-11-28', '2024-12-25', '2024-12-26'];
+
+        // Get the date picker, warning, and payout message elements
+        const datePicker = document.getElementById("datePicker");
+        const warningMessage = document.getElementById("warning");
+        const payoutMessage = document.getElementById("payoutMessage");
+
+        // Function to check if selected date is restricted
+        function isRestricted(date) {
+            return restrictedDates.includes(date);
+        }
+
+        // Function to add 13 days, skipping over restricted dates
+        function calculatePayoutDate(startDateStr) {
+            let payoutDate = new Date(startDateStr);
+            let daysAdded = 0;
+
+            // Keep adding days until we've reached 13 non-restricted days
+            while (daysAdded < 13) {
+                payoutDate.setDate(payoutDate.getDate() + 1);
+                const formattedDate = payoutDate.toISOString().split("T")[0];
+                
+                if (!isRestricted(formattedDate)) {
+                    daysAdded++;  // Only count non-restricted days
+                }
+            }
+
+            return payoutDate.toISOString().split("T")[0];
+        }
+
+        // Event listener for date picker change
+        datePicker.addEventListener("change", function() {
+            const selectedDate = this.value;
+            if (isRestricted(selectedDate)) {
+                warningMessage.style.display = "block";  // Show warning message
+                payoutMessage.style.display = "none";  // Hide payout message
+                this.value = "";  // Clear the selected date
+            } else {
+                warningMessage.style.display = "none";  // Hide warning message
+                const payoutDate = calculatePayoutDate(selectedDate);  // Calculate payout date (13 non-restricted days)
+                payoutMessage.style.display = "block";  // Show payout message
+                payoutMessage.textContent = "Payout request day is: " + payoutDate;  // Display the payout date
+            }
+        });
+    </script>
+</body>
+</html>
